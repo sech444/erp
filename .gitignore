@@ -1,0 +1,12 @@
+node_modules/
+.env
+.next/
+dist/
+build/
+*.log
+.DS_Store
+prisma/migrations/
+api/node_modules/
+api/.env
+api/web/.next/
+api/web/node_modues
