@@ -2,13 +2,25 @@ services:
   - type: web
     name: erp-api
     env: docker
-    dockerfilePath: ./apps/api/Dockerfile   # ← point here
-    dockerContext: ./apps/api               # ← and here
-    ...
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
 
   - type: web
     name: erp-web
     env: docker
     dockerfilePath: ./apps/web/Dockerfile
     dockerContext: ./apps/web
-    ...
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://erp-api.onrender.com
