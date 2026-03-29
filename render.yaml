@@ -97,7 +97,7 @@ services:
     plan: starter
     runtime: docker
     dockerfilePath: apps/web/Dockerfile    # relative to repo root
-    dockerContext: apps/web                # web dir = build context
+    dockerContext: .                # web dir = build context
     branch: main
     autoDeploy: true
 
