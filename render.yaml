@@ -37,7 +37,7 @@ services:
     region: singapore
     plan: starter                 # starter | standard | pro
     runtime: docker
-    dockerfilePath: ./apps/api/Dockerfile
+    dockerfilePath: apps/api/Dockerfile
     dockerContext: .              # build context = repo root (monorepo)
     branch: main
     healthCheckPath: /health
@@ -117,8 +117,8 @@ services:
     region: singapore
     plan: starter
     runtime: docker
-    dockerfilePath: ./apps/web/Dockerfile
-    dockerContext: ./apps/web     # build context = web app only
+    dockerfilePath: apps/web/Dockerfile
+    dockerContext: apps/web       # build context = web app only
     branch: main
 
     autoDeploy: true
