@@ -1,23 +1,17 @@
-FROM node:20-alpine AS base
+FROM node:20-alpine AS deps
 WORKDIR /app
-
-# ── Dependencies ──────────────────────────────────────────────
-# dockerContext = apps/web, so COPY paths are relative to apps/web/
-FROM base AS deps
-COPY package.json ./
-COPY package-lock.json* ./
+COPY package*.json ./
 RUN npm install
 
-# ── Builder ───────────────────────────────────────────────────
-FROM base AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
-# ── Production runner ─────────────────────────────────────────
 FROM node:20-alpine AS runner
 WORKDIR /app
 
@@ -27,14 +21,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs
 
-# standalone output from next build
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public           ./public
+COPY --from=builder /app/public            ./public
+COPY --from=builder /app/.next/standalone  ./
+COPY --from=builder /app/.next/static      ./.next/static
 
 USER nextjs
 EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]

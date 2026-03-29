@@ -1,64 +1,47 @@
 # ─────────────────────────────────────────────────────────────────────────────
-#  TechServ ERP — Render Deployment Blueprint
-#  render.yaml  (Infrastructure as Code)
+#  TechServ ERP — Render Blueprint
+#  render.yaml
 #
-#  Services:
-#    - PostgreSQL 16  (managed database)
-#    - Redis 7        (managed cache)
-#    - API            (Fastify — Docker)
-#    - Web            (Next.js 14 — Docker)
-#
-#  Deploy:
-#    1. Push this repo to GitHub
-#    2. Go to https://dashboard.render.com → New → Blueprint
-#    3. Connect your repo → Render reads this file and provisions everything
-#    4. Fill in the required env var values marked with sync: false
+#  Deploy: Render → New → Blueprint → connect repo → done
 # ─────────────────────────────────────────────────────────────────────────────
 
 databases:
-  # ── PostgreSQL ────────────────────────────────────────────────
   - name: erp-postgres
     databaseName: erp_db
     user: erp
-    plan: starter                 # starter (free) | standard | pro
-    region: singapore             # sgp | ohio | oregon | frankfurt | virginia
-    # postgresMajorVersion: 16    # Render defaults to latest; pin if needed
-
-  # ── Redis ─────────────────────────────────────────────────────
-  - name: erp-redis
-    plan: starter                 # starter (free) | standard
+    plan: starter
     region: singapore
-    ipAllowList: []               # empty = only internal Render services can connect
+
+  - name: erp-redis
+    plan: starter
+    region: singapore
+    ipAllowList: []
 
 services:
-  # ── API (Fastify + Prisma) ────────────────────────────────────
+  # ── API ───────────────────────────────────────────────────────
   - type: web
     name: erp-api
     region: singapore
-    plan: starter                 # starter | standard | pro
+    plan: starter
     runtime: docker
-    dockerfilePath: apps/api/Dockerfile
-    dockerContext: .              # build context = repo root (monorepo)
+    dockerfilePath: apps/api/Dockerfile    # relative to repo root, no leading ./
+    dockerContext: .                        # repo root = build context
     branch: main
     healthCheckPath: /health
-
-    autoDeploy: true              # redeploy on every push to main
+    autoDeploy: true
 
     envVars:
-      # ── Database (auto-injected from the managed DB above) ────
       - key: DATABASE_URL
         fromDatabase:
           name: erp-postgres
           property: connectionString
 
-      # ── Redis (auto-injected from managed Redis above) ────────
       - key: REDIS_URL
         fromService:
           name: erp-redis
           type: redis
           property: connectionString
 
-      # ── Node ──────────────────────────────────────────────────
       - key: NODE_ENV
         value: production
 
@@ -68,9 +51,8 @@ services:
       - key: API_PREFIX
         value: /api/v1
 
-      # ── JWT secrets (generate with: openssl rand -hex 32) ─────
       - key: JWT_SECRET
-        generateValue: true       # Render auto-generates a secure random value
+        generateValue: true
 
       - key: JWT_REFRESH_SECRET
         generateValue: true
@@ -81,11 +63,9 @@ services:
       - key: JWT_REFRESH_EXPIRES
         value: 7d
 
-      # ── CORS — set to your web service URL after first deploy ──
       - key: CORS_ORIGINS
-        value: https://erp-web.onrender.com   # update after web service is live
+        value: https://erp-web.onrender.com
 
-      # ── Email / SendGrid ──────────────────────────────────────
       - key: SMTP_HOST
         value: smtp.sendgrid.net
 
@@ -96,42 +76,34 @@ services:
         value: apikey
 
       - key: SMTP_PASS
-        sync: false               # paste your SendGrid API key in Render dashboard
+        sync: false
 
       - key: FROM_EMAIL
-        value: noreply@yourdomain.com   # update to your verified sender
+        value: noreply@yourdomain.com
 
       - key: FROM_NAME
         value: TechServ ERP
 
       - key: HR_ALERT_EMAIL
-        value: hr@yourdomain.com        # update to your HR team email
+        value: hr@yourdomain.com
 
-      # ── File storage ──────────────────────────────────────────
       - key: STORAGE_PROVIDER
-        value: local              # change to s3 when you add S3 credentials
+        value: local
 
-  # ── Web (Next.js) ─────────────────────────────────────────────
+  # ── Web ───────────────────────────────────────────────────────
   - type: web
     name: erp-web
     region: singapore
     plan: starter
     runtime: docker
-    dockerfilePath: apps/web/Dockerfile
-    dockerContext: apps/web       # build context = web app only
+    dockerfilePath: apps/web/Dockerfile    # relative to repo root
+    dockerContext: apps/web                # web dir = build context
     branch: main
-
     autoDeploy: true
 
     envVars:
       - key: NODE_ENV
         value: production
 
-      # ── Point web to the API service ──────────────────────────
-      # Render gives each service an internal URL: https://<name>.onrender.com
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          name: erp-api
-          type: web
-          property: host
-          envVarKey: NEXT_PUBLIC_API_URL
+        value: https://erp-api.onrender.com   # update after first API deploy

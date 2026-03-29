@@ -1,33 +1,28 @@
-FROM node:20-alpine AS base
+FROM node:20-alpine
 WORKDIR /app
 
-# ── Dependencies ──────────────────────────────────────────────
-FROM base AS deps
-# Copy root package.json (workspaces) + api package.json
-COPY package.json ./
-COPY apps/api/package.json ./apps/api/
-RUN npm install --workspace=apps/api --omit=dev
+# Copy root package files (workspace config)
+COPY package*.json ./
 
-# ── Generate Prisma client ────────────────────────────────────
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./
-COPY apps/api ./apps/api
-# Generate the Prisma client (needs schema.prisma)
+# Copy API package files
+COPY apps/api/package*.json ./apps/api/
+
+# Install all workspace dependencies
+RUN npm install --workspace=apps/api
+
+# Copy Prisma schema first (needed for generate)
+COPY apps/api/prisma ./apps/api/prisma
+
+# Generate Prisma client
 RUN cd apps/api && npx prisma generate
 
-# ── Production runner ─────────────────────────────────────────
-FROM node:20-alpine AS runner
-WORKDIR /app
+# Copy the rest of the API source
+COPY apps/api/src ./apps/api/src
 
 ENV NODE_ENV=production
-
-COPY --from=builder /app/node_modules  ./node_modules
-COPY --from=builder /app/apps/api      ./apps/api
-COPY --from=builder /app/package.json  ./
+ENV PORT=3001
 
 EXPOSE 3001
 
-# On startup: run any pending migrations, then start the server
+# Run migrations then start
 CMD ["sh", "-c", "cd apps/api && npx prisma migrate deploy && node src/server.js"]
