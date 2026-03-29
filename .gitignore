@@ -63,7 +63,7 @@ Desktop.ini
 .settings/
 
 # ── Docker ────────────────────────────────────────────────────
-# Keep docker-compose.yml — ignore local overrides
+# Keep Dockerfiles and render.yaml — ignore local overrides only
 docker-compose.override.yml
 
 # ── PDF temp files generated at runtime ───────────────────────
@@ -98,3 +98,4 @@ coverage/
 # ── Misc ──────────────────────────────────────────────────────
 .cache/
 .parcel-cache/
+node_modules
