@@ -1,12 +1,100 @@
-node_modules/
+# ─────────────────────────────────────────────────────────────
+#  TechServ ERP — .gitignore
+# ─────────────────────────────────────────────────────────────
+
+# ── Environment & Secrets ─────────────────────────────────────
 .env
-.next/
+.env.local
+.env.development
+.env.production
+.env.staging
+apps/api/.env
+apps/web/.env
+apps/web/.env.local
+
+# ── Node / npm ────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+package-lock.json
+
+# ── Next.js ───────────────────────────────────────────────────
+apps/web/.next/
+apps/web/out/
+apps/web/.vercel/
+apps/web/next-env.d.ts
+
+# ── Prisma ────────────────────────────────────────────────────
+# Keep schema.prisma and seed.js — ignore generated client & migrations
+apps/api/prisma/migrations/
+
+# ── Build outputs ─────────────────────────────────────────────
 dist/
 build/
+*.tsbuildinfo
+
+# ── Logs ─────────────────────────────────────────────────────
+logs/
 *.log
+pids/
+*.pid
+*.seed
+
+# ── OS files ──────────────────────────────────────────────────
 .DS_Store
-prisma/migrations/
-api/node_modules/
-api/.env
-api/web/.next/
-api/web/node_modues
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# ── Editor / IDE ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ── Docker ────────────────────────────────────────────────────
+# Keep docker-compose.yml — ignore local overrides
+docker-compose.override.yml
+
+# ── PDF temp files generated at runtime ───────────────────────
+apps/api/uploads/
+apps/api/generated-pdfs/
+
+# ── Flutter / Dart ────────────────────────────────────────────
+apps/mobile/.dart_tool/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/.packages
+apps/mobile/build/
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+apps/mobile/android/key.properties
+apps/mobile/ios/Pods/
+apps/mobile/ios/.symlinks/
+apps/mobile/ios/Flutter/Flutter.framework/
+apps/mobile/ios/Flutter/Flutter.podspec
+apps/mobile/pubspec.lock
+*.g.dart
+*.freezed.dart
+
+# ── Test coverage ─────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Archives (never commit zip extracts) ─────────────────────
+*.zip
+*.tar.gz
+
+# ── Misc ──────────────────────────────────────────────────────
+.cache/
+.parcel-cache/
